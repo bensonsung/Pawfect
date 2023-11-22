@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animal Recuer</title>
+  </head>
+  <body
+    style="
+      background: url(https://images.unsplash.com/photo-1597633425046-08f5110420b5?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D);
+      background-size: cover;
+    "
+  >
+    <div>
+      <h1>Change the world by changing a dog's life</h1>
+      <br />
+      <br />
+      <h2>Adopting a dog today</h2>
+      <br />
+      <br />
+      <p>Enter the Url with dogs image and we can determine what breed is it</p>
+      <input type="text" id="imageUrl" placeholder="Enter image URL" />
+      <button onclick="analyzeDog()">I Choose you</button>
+      <p id="output">Breed and with image will be shown here</p>
+      <img
+        id="resultImage"
+        style="max-width: 100%; max-height: 300px; margin-top: 10px"
+        alt="Result Image"
+      />
+    </div>
+    <script>
+      function analyzeDog() {
+        const imageUrl = document.getElementById("imageUrl").value;
+        const outputElement = document.getElementById("output");
+        const resultImageElement = document.getElementById("resultImage");
+
+        if (imageUrl) {
+          fetch(
+            "https://animalrescue-prediction.cognitiveservices.azure.com/customvision/v3.0/Prediction/98b5d03a-5023-4ea9-84e7-d3424de388ba/classify/iterations/Choose%20your%20starter/url",
+            {
+              method: "POST",
+              body: JSON.stringify({ Url: imageUrl }),
+              headers: {
+                "Content-Type": "application/json",
+                "Prediction-key": "4e3fe94381d74de6b98caac9e3e4c9cf",
+              },
+            }
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              const predictions = data.predictions;
+
+              if (predictions && predictions.length > 0) {
+                const highestProbabilityTag = predictions.reduce(
+                  (prev, current) => {
+                    return prev.probability > current.probability
+                      ? prev
+                      : current;
+                  }
+                );
+
+                outputElement.textContent = `Predicted dog type: ${highestProbabilityTag.tagName}`;
+                resultImageElement.src = imageUrl;
+              } else {
+                outputElement.textContent = "No predictions available";
+                resultImageElement.src = ""; // Clear the image if no predictions
+              }
+            })
+            .catch((error) => {
+              console.error("Error making API request:", error);
+              outputElement.textContent = "Error making API request";
+              resultImageElement.src = ""; // Clear the image in case of an error
+            });
+        } else {
+          alert("Please enter an image URL before submitting.");
+        }
+      }
+    </script>
+  </body>
+</html>
